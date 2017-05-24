@@ -134,3 +134,30 @@ endif::[]
 Developers and administrators can xref:../../dev_guide/projects.adoc#dev-guide-projects[interact
 with projects] using xref:../../cli_reference/index.adoc#cli-reference-index[the CLI] or the
 xref:../infrastructure_components/web_console.adoc#architecture-infrastructure-components-web-console[web console].
+
+ifdef::openshift-online[]
+[[projects-hibenation]]
+=== Project Hibernation
+In {product-title} Starter, a project exceeding 54 cumulative quota-hours of
+usage in a rolling 72-hour period must sleep for the next 18 hours. Also, a
+project that has been inactive for more than 30 minutes will be idled. When a
+project's network activity falls below a configured threshold, a project is
+deemed inactive. When a project is idled, the replica count is set to `0` and
+all pods are deleted. All  persistent volumes (PVs) and persistent volume claims
+(PVCs) in the project are left untouched. Upon receiving network traffic, the
+replica count will be scaled back to whatever it was before being idled.
+
+Quota-hours are calculated as the maximum between percentage of terminating and
+non-terminating pod resource quota consumed, multiplied by the running time of
+those pods. For example, 2 terminating pods each using half of the available
+memory quota for 1 hour will be counted as 1 terminating quota-hour.
+
+When the project is in force-sleep, the replica count is set to `0` and all
+individual pods are deleted. All PVCs and PVs in the project are left untouched.
+After the force-sleep period is over, a project is put in an idled state, where
+the replica count is `0`, but the force-sleep resource quota is removed. Upon
+receiving network traffic, the project's replica counts will be restored to
+their pre-sleep value and pods will be created.
+
+In {product-title} Pro, projects do not hibernate.
+endif::[]
